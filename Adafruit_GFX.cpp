@@ -1,4 +1,6 @@
 /******************************************************************
+ Modified by David Bliss @odopod a nurun company
+ 
  This is the core graphics library for all our displays, providing
  basic graphics primitives (points, lines, circles, etc.). It needs
  to be paired with a hardware-specific library for each display
@@ -357,9 +359,9 @@ void Adafruit_GFX::write(uint8_t c) {
   } else if (c == '\r') {
     // skip em
   } else {
-    drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
-    cursor_x += textsize*6;
-    if (wrap && (cursor_x > (_width - textsize*6))) {
+    int8_t numCols = drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+    cursor_x += textsize*numCols;
+    if (wrap && (cursor_x > (_width - textsize*numCols))) {
       cursor_y += textsize*8;
       cursor_x = 0;
     }
@@ -370,21 +372,35 @@ void Adafruit_GFX::write(uint8_t c) {
 }
 
 // draw a character
-void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
+int8_t Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 			    uint16_t color, uint16_t bg, uint8_t size) {
+  
+	int c_width=6;
+	if (c!=' '){
+	  for (int8_t i=0; i<5; i++ ) {
+	     if (pgm_read_byte(font+(c*5)+i)==0x00){
+	       c_width=i+1;
+	       break;
+	     } 
+	  }
+	}
+	
+	if((x >= _width)            || // Clip right
+	   (y >= _height)           || // Clip bottom
+	   ((x + (c_width-1) * size - 1) < 0) || // Clip left
+	   ((y + 8 * size - 1) < 0)) {   // Clip top
+	   
+		return c_width;
+	}
 
-  if((x >= _width)            || // Clip right
-     (y >= _height)           || // Clip bottom
-     ((x + 5 * size - 1) < 0) || // Clip left
-     ((y + 8 * size - 1) < 0))   // Clip top
-    return;
-
-  for (int8_t i=0; i<6; i++ ) {
+  for (int8_t i=0; i<c_width; i++ ) {
     uint8_t line;
-    if (i == 5) 
-      line = 0x0;
-    else 
+    if (i < c_width-1) 
       line = pgm_read_byte(font+(c*5)+i);
+    else 
+      line = 0x0;
+
+    // draw it
     for (int8_t j = 0; j<8; j++) {
       if (line & 0x1) {
         if (size == 1) // default size
@@ -402,6 +418,7 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
       line >>= 1;
     }
   }
+  return c_width;
 }
 
 void Adafruit_GFX::setCursor(int16_t x, int16_t y) {

@@ -1,4 +1,6 @@
 /******************************************************************
+ Modified by David Bliss @odopod a nurun company
+ 
  This is the core graphics library for all our displays, providing
  basic graphics primitives (points, lines, circles, etc.). It needs
  to be paired with a hardware-specific library for each display
@@ -13,8 +15,8 @@
  All text above must be included in any redistribution.
  ******************************************************************/
 
-#ifndef _ADAFRUIT_GFX_H
-#define _ADAFRUIT_GFX_H
+#ifndef _Adafruit_GFX_H
+#define _Adafruit_GFX_H
 
 #if ARDUINO >= 100
  #include "Arduino.h"
@@ -66,7 +68,7 @@ class Adafruit_GFX : public Print {
   void drawBitmap(int16_t x, int16_t y, 
 		  const uint8_t *bitmap, int16_t w, int16_t h,
 		  uint16_t color);
-  void drawChar(int16_t x, int16_t y, unsigned char c,
+  int8_t drawChar(int16_t x, int16_t y, unsigned char c,
 		uint16_t color, uint16_t bg, uint8_t size);
 #if ARDUINO >= 100
   virtual size_t write(uint8_t);
